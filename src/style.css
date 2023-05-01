@@ -99,7 +99,7 @@ ul {
 }
 
 .space_key {
-  max-width: 510px;
+  max-width: 445px;
   width: 100%;
   font-weight: 700;
   font-size: 20px;
@@ -123,4 +123,10 @@ ul {
 
 .tocase {
   text-transform:uppercase;
+}
+
+.caps-pressed {
+  box-sizing: border-box;
+  border: 2px solid #482020;
+  color: black;
 }
