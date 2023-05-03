@@ -168,8 +168,8 @@ addishinalClass: 'shift_key'},
 	enKey:'?',
 	ruKey: '.'},
 	{code:'ArrowUp',
-	enKey:'Up',
-	ruKey: 'Up'	},
+	enKey:'↑',
+	ruKey: '↑'	},
 {code:'ShiftRight',
 	enKey:'Shift',
 	ruKey: 'Shift',
@@ -192,23 +192,25 @@ addishinalClass: 'space_key'	},
 	ruKey: 'Alt'	},
 
 {code:'ArrowLeft',
-	enKey:'Left',
-	ruKey: 'Left'	},
+	enKey:'←',
+	ruKey: '←'	},
 {code:'ArrowDown',
-	enKey:'Down',
-	ruKey: 'Down'	},
+	enKey:'↓',
+	ruKey: '↓'	},
 {code:'ArrowRight',
-	enKey:'Right',
-	ruKey: 'Right'	},
+	enKey:'→',
+	ruKey: '→'	},
 	{code:'ControlRight',
 	enKey:'Ctrl',
 	ruKey: 'Ctrl'	}	
 ]
-const titleName = [{
+const titleName = {
 	enKey: 'Write here',
-	ruKey: 'Писать здесь'
-}]
-const specKey = ['Backspace','Tab','Delete','CapsLock','Enter','ShiftRight','ShiftLeft','ControlRight','ControlLeft','MeteLeft','ArrowRight','ArrowLeft','ArrowUp','ArrowDown']
+	ruKey: 'Писать здесь',
+	ruText: 'Нажми Shift + Ctrl для смены языка',
+	enText: 'Press Shift + Ctrl to change the language'
+}
+const specKey = ['Backspace','Tab','Delete','CapsLock','Enter','AltLeft','AltRight','ShiftRight','ShiftLeft','ControlRight','ControlLeft','MetaLeft','ArrowRight','ArrowLeft','ArrowUp','ArrowDown']
 const container = document.createElement('div');
 container.className = 'container';
 document.body.append(container);
@@ -228,12 +230,19 @@ const ul = document.createElement('ul');
 ul.className = 'list-keys';
 keyboard_block.append(ul);
 
+const toogleLangText = document.createElement('p');
+toogleLangText.className = 'text';
+
+container.append(toogleLangText);
+
+
 const LNG_KEY = 'lng';
 let currentLanguage = localStorage.getItem(LNG_KEY);
 if (!currentLanguage) {
 	localStorage.setItem(LNG_KEY, 'en')
 	currentLanguage = 'en';
 	createKeyboard(data,currentLanguage);
+	
 }
 
 
@@ -249,8 +258,12 @@ function createKeyboard(data, currentLanguage) {
 		li.setAttribute('data-id', `${data[i].code}`);
 		if(currentLanguage == "en"){
 			li.textContent = `${data[i].enKey}`;
+			title.innerHTML = titleName.enKey;
+			toogleLangText.textContent = titleName.enText;
 		} else {
 			li.textContent = `${data[i].ruKey}`;
+			title.innerHTML = titleName.ruKey;
+			toogleLangText.textContent = titleName.ruText;
 		}
 		// li.textContent = `${data[i].enKey}`;
 		ul.append(li)
@@ -263,13 +276,11 @@ const toogleLang = (ev) => {
 		if (currentLanguage == 'en') {
 			localStorage.setItem(LNG_KEY, 'ru');
 			currentLanguage = 'ru';
-			alert('now ru')
 			ul.innerHTML = '';
 			createKeyboard(data,currentLanguage);
 		} else {
 			localStorage.setItem(LNG_KEY, 'en')
 	        currentLanguage = 'en';
-			alert('now en');
 			ul.innerHTML = '';
 			createKeyboard(data,currentLanguage);
 		}
@@ -283,20 +294,31 @@ document.addEventListener('keypress', (event) => {
 	console.log(e)
 	let key = event.code;
 	// найти место нажатия 
-	document.querySelector('.key[data-id='+key+']').classList.add('pressed');
-	console.log(key)
+	document.querySelector('.key[data-id='+key+']').classList.toggle('pressed');
 })
 document.addEventListener('keyup',(event) => {
 	setFocus();
 	toogleLang(event)
 	let e = event.target;
 	let key = event.code;
+	
 	document.querySelector('.key[data-id='+key+']').classList.remove('pressed')
 	console.log(key)
 	console.log(e)
 	if(key === 'CapsLock') {
-		keyboard_block.classList.toggle('tocase')
-		// document.querySelector('.key[data-id='+key+']').toggle('caps-pressed')
+		keyboard_block.classList.toggle('tocase');
+		// if (e.getAttribute('data-id')=='CapsLock') {
+		// 	document.querySelector('.key[data-id='+key+']').toggle('caps-pressed')
+		// }
+	}
+	if (key === 'Tab') {
+		setFocus();
+		writing('  ') ;
+	}
+	if (specKey.includes(key)){
+		setFocus();
+		document.querySelector('.key[data-id='+key+']').classList.add('pressed');
+		setTimeout(() => document.querySelector('.key[data-id='+key+']').classList.remove('pressed'), 300)
 	}
 } );
 
@@ -307,12 +329,13 @@ function setFocus() {
 
 window.onload = function() {
 	setFocus()
-	alert('пожалуйста дайте чучуть времени')
+
 }
 // click
 keyboard_block.addEventListener('click', writeByClick);
 
 function writeByClick(event) {
+	textarea.focus()
 	// Сделать стили как для кнопки
 	let e = event.target;
 	document.querySelectorAll('.key').forEach( (el) => {
@@ -320,6 +343,8 @@ function writeByClick(event) {
 	})
 	let key = e.getAttribute('data-id');
 	e.classList.add('pressed');
+	setTimeout(() => document.querySelector('.key[data-id='+key+']').classList.remove('pressed'), 500)
+	
 	console.log(key)
 	
 	// Поиск буквы по коду
@@ -343,7 +368,9 @@ function writeByClick(event) {
 		writing(' ')
 	}
 	if (key === 'Backspace') {
-	  writing()
+		let str = textarea.value
+		console.log(str.slice(0, -1))
+	 return  textarea.value.slice(0, -1)
 	}
 	if (key === 'CapsLock') {
 	  keyboard_block.classList.toggle('tocase')
@@ -351,6 +378,9 @@ function writeByClick(event) {
 	  letter.toUpperCase()
 	  console.log(letter)
 	//   проверить наличие стиля капса
+	}
+	if (key === 'Tab') {
+		writing('  ') 
 	}
 	// если нажатие не на кнопках вернуть фокус
 	if(!e === keyboard_block ) {
@@ -369,3 +399,10 @@ function writeByClick(event) {
 	
 	setFocus()
 }
+
+// const makeOneCaps = (ev) => {
+// 	let key = ev.code;
+// 	if (key && ev.shiftKey) {
+// 		alert(key)
+// 	}
+// }
